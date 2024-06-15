@@ -11,6 +11,7 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController passwordController = TextEditingController();
   String imageSource = 'images/question-mark.png';
   final storage = const FlutterSecureStorage();
+  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
   @override
   void initState() {
@@ -28,24 +29,8 @@ class _LoginPageState extends State<LoginPage> {
         passwordController.text = savedPassword;
       });
 
-      _showSnackBar();
+      _showBasicSnackBar();
     }
-  }
-
-  void _showSnackBar() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Previous login credentials loaded.'),
-        action: SnackBarAction(
-          label: 'Clear saved data',
-          onPressed: () {
-            _clearStoredCredentials();
-            loginController.clear();
-            passwordController.clear();
-          },
-        ),
-      ),
-    );
   }
 
   Future<void> _clearStoredCredentials() async {
@@ -96,37 +81,62 @@ class _LoginPageState extends State<LoginPage> {
     await storage.write(key: 'password', value: password);
   }
 
+  void _showBasicSnackBar() {
+    final snackBar = SnackBar(
+      content: const Text('Previous login credentials loaded.'),
+      action: SnackBarAction(
+        label: 'Clear saved data',
+        onPressed: () {
+          // Code to execute when the button is pressed, if needed.
+          _clearStoredCredentials();
+          loginController.clear();
+          passwordController.clear();
+        },
+      ),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login Page'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: <Widget>[
-            TextField(
-              controller: loginController,
-              decoration: const InputDecoration(labelText: 'Login name'),
-            ),
-            TextField(
-              controller: passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _handleLogin,
-              child: const Text('Login'),
-            ),
-            const SizedBox(height: 20),
-            Image.asset(
-              imageSource,
-              width: 300,
-              height: 300,
-            ),
-          ],
+      body: ScaffoldMessenger(
+        key: scaffoldMessengerKey,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: <Widget>[
+              TextField(
+                controller: loginController,
+                decoration: const InputDecoration(labelText: 'Login name'),
+              ),
+              TextField(
+                controller: passwordController,
+                decoration: const InputDecoration(labelText: 'Password'),
+                obscureText: true,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _handleLogin,
+                child: const Text('Login'),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _showBasicSnackBar,
+                child: const Text('Show SnackBar'),
+              ),
+              const SizedBox(height: 20),
+              Image.asset(
+                imageSource,
+                width: 300,
+                height: 300,
+              ),
+            ],
+          ),
         ),
       ),
     );
